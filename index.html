@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Set Maker</title>
+<meta name="description" content="Make a fresh weekly picture word set for speech sound therapy in English, Kannada, Telugu or Hindi, with printable cards and a home practice chart.">
+<meta name="theme-color" content="#17212E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== 1. DESIGN TOKENS (from ASLP App Kit) ===== */
+:root{
+  --paper:#F7F9FB; --grid:#E3E9F0; --surface:#FFFFFF;
+  --ink:#17212E; --muted:#556375; --line:#CBD5E1;
+  --accent:#1E5BB8; --warn:#9A5B00; --danger:#B42318; --hl:#F2C230;
+  --font:"Atkinson Hyperlegible","Noto Sans Kannada","Noto Sans Telugu","Noto Sans Devanagari",system-ui,sans-serif;
+  --r-sm:4px; --r-md:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E151E; --grid:#1B2633; --surface:#141E2A;
+    --ink:#E6ECF3; --muted:#9AA8B8; --line:#2B3A4B;
+    --accent:#78AEFF; --warn:#F2B24C; --danger:#FF8A80;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E151E; --grid:#1B2633; --surface:#141E2A;
+  --ink:#E6ECF3; --muted:#9AA8B8; --line:#2B3A4B;
+  --accent:#78AEFF; --warn:#F2B24C; --danger:#FF8A80;
+}
+
+/* ===== 2. BASE ===== */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:1rem;line-height:1.55;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+:lang(kn) body,:lang(te) body,:lang(hi) body{line-height:1.7}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+.muted{color:var(--muted)}
+
+/* ===== 3. HEADER ===== */
+header.top{background:var(--ink);color:var(--paper)}
+header.top .wrap{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding-block:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand h1{font-size:1.15rem;margin:0}
+.brand small{display:block;color:color-mix(in srgb,var(--paper) 70%,transparent);font-size:.8rem;font-weight:400}
+.top-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.net{font-size:.8rem;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--paper) 35%,transparent)}
+.net[data-state="offline"]{background:var(--warn);color:#fff;border-color:transparent}
+select,input[type="text"],input[type="number"]{font:inherit;font-size:.95rem;width:100%;padding:8px 10px;margin-top:6px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);color:var(--ink)}
+select.lang{width:auto;margin:0;padding:6px 8px;font-size:.9rem;border-color:transparent}
+
+/* ===== 4. LAYOUT ===== */
+.intro{padding:26px 0 4px;max-width:66ch}
+.intro h2{font-size:clamp(1.5rem,3.4vw,2.05rem);line-height:1.2;margin:0 0 8px}
+.intro p{margin:0;color:var(--muted)}
+.layout{display:grid;gap:20px;grid-template-columns:1fr;padding:18px 0}
+@media (min-width:900px){ .layout{grid-template-columns:340px minmax(0,1fr);align-items:start} .layout aside{position:sticky;top:12px} }
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px}
+.panel h3{margin:0 0 6px;font-size:1.05rem}
+label.field{display:block;font-weight:700;font-size:.9rem;margin-top:12px}
+.hint{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+fieldset{border:0;padding:0;margin:14px 0 0}
+legend{font-weight:700;font-size:.9rem;padding:0;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-flex;align-items:baseline;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:.9rem;cursor:pointer}
+.chip span small{color:var(--muted);font-size:.78rem}
+.chip input:checked + span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip input:checked + span small{color:color-mix(in srgb,var(--paper) 75%,transparent)}
+.chip input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.chip input:disabled + span{opacity:.4;cursor:not-allowed}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;font-size:.92rem;cursor:pointer;border-radius:var(--r-sm);padding:9px 16px;border:1px solid var(--ink);background:transparent;color:var(--ink)}
+button.primary{background:var(--ink);color:var(--paper)}
+button.small{padding:5px 10px;font-size:.82rem}
+button.danger{color:var(--danger);border-color:var(--danger)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.err{color:var(--danger);font-size:.86rem;min-height:1.2em;margin:8px 0 0}
+
+/* ===== 5. CARDS (the memorable element) ===== */
+.set-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.set-head h3{margin:0;font-size:1.15rem}
+.set-head p{margin:2px 0 0;font-size:.88rem;color:var(--muted)}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 10px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:170px}
+.card .pic{font-size:3.2rem;line-height:1.1;min-height:3.6rem;display:flex;align-items:center}
+.card .pic.none{font-size:.8rem;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-sm);width:64px;height:56px;justify-content:center}
+.card .word{font-size:1.45rem;font-weight:700;line-height:1.25}
+.card .word mark{background:transparent;color:inherit;box-shadow:inset 0 -0.38em 0 color-mix(in srgb,var(--hl) 70%,transparent)}
+.card .gloss{font-size:.8rem;color:var(--muted)}
+.card .tag{position:absolute;top:8px;left:8px;font-size:.7rem;color:var(--muted)}
+.card .swap{position:absolute;top:6px;right:6px;padding:2px 7px;font-size:.75rem;border-color:var(--line);color:var(--muted)}
+.empty-state{padding:24px;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted)}
+.notice{font-size:.86rem;color:var(--warn);margin:10px 0 0}
+
+/* ===== 6. HISTORY + CUSTOM ===== */
+.below{display:grid;gap:20px;grid-template-columns:1fr;margin-bottom:28px}
+@media (min-width:900px){ .below{grid-template-columns:1fr 1fr} }
+.table-scroll{overflow-x:auto}
+table.rec{width:100%;border-collapse:collapse;font-size:.88rem}
+table.rec th,table.rec td{padding:7px 6px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+table.rec th{color:var(--muted);font-weight:700;white-space:nowrap}
+
+/* ===== 7. FOOTER, TOAST ===== */
+footer{border-top:1px solid var(--line);background:var(--surface);padding:18px 0 26px;font-size:.85rem;color:var(--muted)}
+footer p{margin:4px 0;max-width:88ch}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:var(--r-sm);transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+
+/* ===== 8. PRINT: cards or home chart ===== */
+#printArea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  body > *:not(main), main > *:not(#printArea){display:none!important}
+  #printArea{display:block!important}
+  .p-head{font-size:11pt;margin-bottom:8pt}
+  .p-head h2{font-size:16pt;margin:0 0 2pt}
+  .p-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8pt}
+  .p-card{border:1.5px solid #333;border-radius:8pt;height:62mm;display:flex;flex-direction:column;align-items:center;justify-content:center;break-inside:avoid;text-align:center}
+  .p-card .pic{font-size:44pt;line-height:1.1}
+  .p-card .word{font-size:22pt;font-weight:700;margin-top:4pt}
+  .p-card .word mark{background:#FFE58A;color:#000}
+  .p-card .gloss{font-size:9pt;color:#444}
+  table.chart{width:100%;border-collapse:collapse;font-size:12pt}
+  table.chart th,table.chart td{border:1px solid #555;padding:5pt;text-align:center}
+  table.chart td.w{text-align:left;font-size:14pt;font-weight:700;white-space:nowrap}
+  table.chart td.w span{font-size:16pt;margin-right:6pt}
+  .p-note{font-size:10pt;margin-top:8pt}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#F7F9FB"/><rect x="10" y="14" width="20" height="24" rx="3" fill="#CBD5E1" transform="rotate(-8 20 26)"/><rect x="26" y="12" width="20" height="24" rx="3" fill="#1E5BB8"/><rect x="36" y="24" width="20" height="24" rx="3" fill="#F2C230" transform="rotate(8 46 36)"/></svg>
+      <h1><span data-i18n="appName">Word Set Maker</span><small data-i18n="appSub">Fresh picture words for speech sound therapy</small></h1>
+    </div>
+    <div class="top-tools">
+      <span class="net" id="net" role="status" aria-live="polite"></span>
+      <label class="sr" for="lang" data-i18n="language">Language</label>
+      <select id="lang" class="lang">
+        <option value="en">English</option><option value="kn">ಕನ್ನಡ</option><option value="te">తెలుగు</option><option value="hi">हिन्दी</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h2 data-i18n="introTitle">A new word set every week, without repeats</h2>
+    <p data-i18n="introText">Choose the client's language, target sounds and word positions. The app picks familiar Indian words, skips ones this client practised recently, and prints cards and a home practice chart.</p>
+  </section>
+
+  <div class="layout">
+    <aside class="panel" aria-labelledby="setupTitle">
+      <h3 id="setupTitle" data-i18n="setupTitle">Set up</h3>
+      <label class="field" for="code"><span data-i18n="code">Client code</span><span class="hint" data-i18n="codeHint">Use a code, not a name. Rotation is tracked per code.</span>
+        <input type="text" id="code" maxlength="30" autocomplete="off" placeholder="e.g. SRC-031"></label>
+      <label class="field" for="tlang"><span data-i18n="tlang">Therapy language</span>
+        <select id="tlang"><option value="en">English</option><option value="kn">ಕನ್ನಡ (Kannada)</option><option value="te">తెలుగు (Telugu)</option><option value="hi">हिन्दी (Hindi)</option></select></label>
+      <fieldset><legend data-i18n="targets">Target sounds</legend><div class="chips" id="targets"></div></fieldset>
+      <fieldset><legend data-i18n="positions">Word position</legend><div class="chips" id="positions"></div></fieldset>
+      <div class="row2">
+        <label class="field" for="count"><span data-i18n="count">Words</span>
+          <select id="count"><option>6</option><option selected>8</option><option>10</option><option>12</option></select></label>
+        <label class="field" for="weeks"><span data-i18n="weeks">Skip words used in</span>
+          <select id="weeks"></select></label>
+      </div>
+      <p class="err" id="err" role="alert"></p>
+      <div class="actions"><button class="primary" type="button" id="make" data-i18n="make">Make a set</button></div>
+    </aside>
+
+    <section aria-labelledby="setTitle">
+      <div class="set-head">
+        <div><h3 id="setTitle" data-i18n="setTitle">This week's set</h3><p id="setMeta"></p></div>
+        <div class="actions" style="margin-top:0">
+          <button type="button" id="saveSet" data-i18n="saveSet">Save as this week's set</button>
+          <button type="button" id="printCards" data-i18n="printCards">Print cards</button>
+          <button type="button" id="printChart" data-i18n="printChart">Print home chart</button>
+        </div>
+      </div>
+      <div class="cards" id="cards" aria-live="polite"></div>
+      <p class="notice" id="notice" hidden></p>
+    </section>
+  </div>
+
+  <div class="below">
+    <section class="panel" aria-labelledby="histTitle">
+      <div class="set-head" style="margin-bottom:6px">
+        <h3 id="histTitle" data-i18n="histTitle">Saved sets</h3>
+        <div class="actions" style="margin-top:0">
+          <button type="button" class="small" id="csvBtn" data-i18n="exportCsv">Download CSV</button>
+          <button type="button" class="small danger" id="clearHist" data-i18n="clearHist">Delete all saved sets</button>
+        </div>
+      </div>
+      <div class="table-scroll" id="hist"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="customTitle">
+      <h3 id="customTitle" data-i18n="customTitle">Add your own words</h3>
+      <p class="muted" style="margin:0;font-size:.88rem" data-i18n="customIntro">Add words for a dialect, a local language or a client's interests. They join the word bank on this device.</p>
+      <div class="row2">
+        <label class="field" for="cWord"><span data-i18n="cWord">Word</span><input type="text" id="cWord" maxlength="30" autocomplete="off"></label>
+        <label class="field" for="cPic"><span data-i18n="cPic">Picture (emoji, optional)</span><input type="text" id="cPic" maxlength="8" autocomplete="off"></label>
+      </div>
+      <label class="field" for="cGloss"><span data-i18n="cGloss">Meaning in English (optional)</span><input type="text" id="cGloss" maxlength="40" autocomplete="off"></label>
+      <div class="row2">
+        <label class="field" for="cTarget"><span data-i18n="cTarget">Target sound</span><select id="cTarget"></select></label>
+        <label class="field" for="cPos"><span data-i18n="cPos">Position</span><select id="cPos"></select></label>
+      </div>
+      <p class="hint" style="margin-top:8px" id="cLangNote"></p>
+      <p class="err" id="cErr" role="alert"></p>
+      <div class="actions"><button type="button" id="cAdd" data-i18n="cAdd">Add word</button></div>
+      <div id="customList" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <section id="printArea" aria-hidden="true"></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n="disclaimer">For use by speech-language pathologists. Choose targets from your own assessment. Word banks are drafts and should be checked for dialect before use.</p>
+    <p data-i18n="reviewNote">Translations are drafts and are being reviewed by native speakers.</p>
+    <p id="credit"></p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== A. APP SETTINGS ===== */
+const APP = {
+  version: "0.1.0 (draft for clinical review)",
+  histKey: "wsm-history", customKey: "wsm-custom", prefsKey: "wsm-prefs",
+  langKey: "aslp-kit-lang",
+  author: "Hemaraja Nayaka S",
+  affiliation: "Department of Audiology & Speech-Language Pathology, Yenepoya Medical College Hospital, Mangaluru"
+};
+
+/* ===== B. TRANSLATIONS (UI) ===== */
+const I18N = {
+  en:{ appName:"Word Set Maker", appSub:"Fresh picture words for speech sound therapy", language:"Language",
+    netOnline:"Online", netOffline:"Offline – still working",
+    introTitle:"A new word set every week, without repeats",
+    introText:"Choose the client's language, target sounds and word positions. The app picks familiar Indian words, skips ones this client practised recently, and prints cards and a home practice chart.",
+    setupTitle:"Set up", code:"Client code", codeHint:"Use a code, not a name. Rotation is tracked per code.",
+    tlang:"Therapy language", targets:"Target sounds", positions:"Word position", count:"Words", weeks:"Skip words used in",
+    wk0:"Don't skip", wk1:"Last week", wkN:"Last {n} weeks",
+    pI:"Initial", pM:"Medial", pF:"Final",
+    make:"Make a set", setTitle:"This week's set", saveSet:"Save as this week's set", printCards:"Print cards", printChart:"Print home chart",
+    emptySet:"Pick at least one target sound and one position, then press \u201cMake a set\u201d.",
+    errPick:"Pick at least one target sound and one position.",
+    short:"Only {n} words fit these choices after skipping recent ones. Add your own words or skip fewer weeks.",
+    none:"No words fit these choices. Try another position, or add your own words below.",
+    swap:"Swap", swapLabel:"Swap this word", saved:"Set saved for {c}", needCode:"Enter a client code to save the set.",
+    metaSet:"{n} words, {l}", histTitle:"Saved sets", exportCsv:"Download CSV", clearHist:"Delete all saved sets",
+    confirmClear:"Delete all saved sets from this device? This cannot be undone.", cleared:"Saved sets deleted",
+    histEmpty:"No saved sets yet. Saved sets let the app avoid repeating words for a client.",
+    colDate:"Date", colCode:"Client", colLang:"Language", colWords:"Words", del:"Delete", deleted:"Deleted",
+    customTitle:"Add your own words", customIntro:"Add words for a dialect, a local language or a client's interests. They join the word bank on this device.",
+    cWord:"Word", cPic:"Picture (emoji, optional)", cGloss:"Meaning in English (optional)", cTarget:"Target sound", cPos:"Position", cAdd:"Add word",
+    cLangNote:"Words are added to the {l} word bank (the therapy language selected above).", cAdded:"Word added", cNeed:"Type a word first.",
+    customNone:"No custom words yet.",
+    chartTitle:"Home practice", chartTries:"Say each word 10 times a day. Tick a box for each day you practised.",
+    chartWord:"Word", chartDays:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], chartFoot:"Practise for 5–10 minutes when your child is calm and interested. Praise trying, not only correct sounds.",
+    noPic:"draw",
+    disclaimer:"For use by speech-language pathologists. Choose targets from your own assessment. Word banks are drafts and should be checked for dialect before use.",
+    reviewNote:"Translations are drafts and are being reviewed by native speakers.", builtBy:"Built by" },
+  kn:{ appName:"Word Set Maker", appSub:"ಉಚ್ಚಾರಣಾ ಚಿಕಿತ್ಸೆಗೆ ಹೊಸ ಚಿತ್ರ ಪದಗಳು", language:"ಭಾಷೆ",
+    netOnline:"ಆನ್‌ಲೈನ್", netOffline:"ಆಫ್‌ಲೈನ್ – ಕೆಲಸ ಮುಂದುವರಿದಿದೆ",
+    introTitle:"ಪ್ರತಿ ವಾರ ಹೊಸ ಪದಗಳ ಗುಂಪು, ಪುನರಾವರ್ತನೆ ಇಲ್ಲದೆ",
+    introText:"ಕ್ಲೈಂಟ್‌ನ ಭಾಷೆ, ಗುರಿ ಧ್ವನಿಗಳು ಮತ್ತು ಪದದ ಸ್ಥಾನ ಆರಿಸಿ. ಆ್ಯಪ್ ಪರಿಚಿತ ಭಾರತೀಯ ಪದಗಳನ್ನು ಆರಿಸುತ್ತದೆ, ಇತ್ತೀಚೆಗೆ ಅಭ್ಯಾಸ ಮಾಡಿದವುಗಳನ್ನು ಬಿಡುತ್ತದೆ ಮತ್ತು ಕಾರ್ಡ್‌ಗಳು ಹಾಗೂ ಮನೆ ಅಭ್ಯಾಸ ಪಟ್ಟಿ ಮುದ್ರಿಸುತ್ತದೆ.",
+    setupTitle:"ಸಿದ್ಧತೆ", code:"ಕ್ಲೈಂಟ್ ಕೋಡ್", codeHint:"ಹೆಸರಲ್ಲ, ಕೋಡ್ ಬಳಸಿ. ಪದಗಳ ಸರದಿ ಕೋಡ್ ಪ್ರಕಾರ ದಾಖಲಾಗುತ್ತದೆ.",
+    tlang:"ಚಿಕಿತ್ಸಾ ಭಾಷೆ", targets:"ಗುರಿ ಧ್ವನಿಗಳು", positions:"ಪದದಲ್ಲಿ ಸ್ಥಾನ", count:"ಪದಗಳು", weeks:"ಇತ್ತೀಚೆಗೆ ಬಳಸಿದ ಪದ ಬಿಡಿ",
+    wk0:"ಬಿಡಬೇಡಿ", wk1:"ಕಳೆದ ವಾರ", wkN:"ಕಳೆದ {n} ವಾರ",
+    pI:"ಆರಂಭ", pM:"ಮಧ್ಯ", pF:"ಅಂತ್ಯ",
+    make:"ಗುಂಪು ತಯಾರಿಸಿ", setTitle:"ಈ ವಾರದ ಗುಂಪು", saveSet:"ಈ ವಾರದ ಗುಂಪಾಗಿ ಉಳಿಸಿ", printCards:"ಕಾರ್ಡ್ ಮುದ್ರಿಸಿ", printChart:"ಮನೆ ಪಟ್ಟಿ ಮುದ್ರಿಸಿ",
+    emptySet:"ಕನಿಷ್ಠ ಒಂದು ಗುರಿ ಧ್ವನಿ ಮತ್ತು ಒಂದು ಸ್ಥಾನ ಆರಿಸಿ, ನಂತರ \u201cಗುಂಪು ತಯಾರಿಸಿ\u201d ಒತ್ತಿ.",
+    errPick:"ಕನಿಷ್ಠ ಒಂದು ಗುರಿ ಧ್ವನಿ ಮತ್ತು ಒಂದು ಸ್ಥಾನ ಆರಿಸಿ.",
+    short:"ಇತ್ತೀಚಿನವುಗಳನ್ನು ಬಿಟ್ಟ ನಂತರ {n} ಪದಗಳು ಮಾತ್ರ ಹೊಂದುತ್ತವೆ. ನಿಮ್ಮ ಪದಗಳನ್ನು ಸೇರಿಸಿ ಅಥವಾ ಕಡಿಮೆ ವಾರ ಬಿಡಿ.",
+    none:"ಯಾವ ಪದವೂ ಹೊಂದುತ್ತಿಲ್ಲ. ಬೇರೆ ಸ್ಥಾನ ಆರಿಸಿ ಅಥವಾ ಕೆಳಗೆ ನಿಮ್ಮ ಪದಗಳನ್ನು ಸೇರಿಸಿ.",
+    swap:"ಬದಲಿಸಿ", swapLabel:"ಈ ಪದ ಬದಲಿಸಿ", saved:"{c} ಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ", needCode:"ಉಳಿಸಲು ಕ್ಲೈಂಟ್ ಕೋಡ್ ನಮೂದಿಸಿ.",
+    metaSet:"{n} ಪದಗಳು, {l}", histTitle:"ಉಳಿಸಿದ ಗುಂಪುಗಳು", exportCsv:"CSV ಡೌನ್‌ಲೋಡ್", clearHist:"ಎಲ್ಲಾ ಗುಂಪುಗಳನ್ನು ಅಳಿಸಿ",
+    confirmClear:"ಈ ಸಾಧನದಿಂದ ಎಲ್ಲಾ ಗುಂಪುಗಳನ್ನು ಅಳಿಸಬೇಕೆ? ಮರಳಿ ಪಡೆಯಲಾಗದು.", cleared:"ಅಳಿಸಲಾಗಿದೆ",
+    histEmpty:"ಇನ್ನೂ ಉಳಿಸಿದ ಗುಂಪುಗಳಿಲ್ಲ. ಉಳಿಸಿದರೆ ಆ್ಯಪ್ ಪದಗಳನ್ನು ಪುನರಾವರ್ತಿಸುವುದಿಲ್ಲ.",
+    colDate:"ದಿನಾಂಕ", colCode:"ಕ್ಲೈಂಟ್", colLang:"ಭಾಷೆ", colWords:"ಪದಗಳು", del:"ಅಳಿಸಿ", deleted:"ಅಳಿಸಲಾಗಿದೆ",
+    customTitle:"ನಿಮ್ಮ ಪದಗಳನ್ನು ಸೇರಿಸಿ", customIntro:"ಉಪಭಾಷೆ, ಸ್ಥಳೀಯ ಭಾಷೆ ಅಥವಾ ಕ್ಲೈಂಟ್‌ನ ಆಸಕ್ತಿಯ ಪದಗಳನ್ನು ಸೇರಿಸಿ. ಅವು ಈ ಸಾಧನದ ಪದಕೋಶಕ್ಕೆ ಸೇರುತ್ತವೆ.",
+    cWord:"ಪದ", cPic:"ಚಿತ್ರ (ಇಮೋಜಿ, ಐಚ್ಛಿಕ)", cGloss:"ಇಂಗ್ಲಿಷ್ ಅರ್ಥ (ಐಚ್ಛಿಕ)", cTarget:"ಗುರಿ ಧ್ವನಿ", cPos:"ಸ್ಥಾನ", cAdd:"ಪದ ಸೇರಿಸಿ",
+    cLangNote:"ಪದಗಳು {l} ಪದಕೋಶಕ್ಕೆ ಸೇರುತ್ತವೆ (ಮೇಲೆ ಆರಿಸಿದ ಚಿಕಿತ್ಸಾ ಭಾಷೆ).", cAdded:"ಪದ ಸೇರಿಸಲಾಗಿದೆ", cNeed:"ಮೊದಲು ಪದ ಬರೆಯಿರಿ.",
+    customNone:"ಇನ್ನೂ ನಿಮ್ಮ ಪದಗಳಿಲ್ಲ.",
+    chartTitle:"ಮನೆ ಅಭ್ಯಾಸ", chartTries:"ಪ್ರತಿ ಪದವನ್ನು ದಿನಕ್ಕೆ 10 ಬಾರಿ ಹೇಳಿ. ಅಭ್ಯಾಸ ಮಾಡಿದ ಪ್ರತಿ ದಿನ ಗುರುತು ಹಾಕಿ.",
+    chartWord:"ಪದ", chartDays:["ಸೋಮ","ಮಂಗಳ","ಬುಧ","ಗುರು","ಶುಕ್ರ","ಶನಿ","ಭಾನು"], chartFoot:"ಮಗು ಶಾಂತವಾಗಿ ಆಸಕ್ತಿಯಿಂದ ಇರುವಾಗ 5–10 ನಿಮಿಷ ಅಭ್ಯಾಸ ಮಾಡಿ. ಸರಿಯಾದ ಉಚ್ಚಾರಣೆಗಷ್ಟೇ ಅಲ್ಲ, ಪ್ರಯತ್ನಕ್ಕೂ ಹೊಗಳಿ.",
+    noPic:"ಚಿತ್ರ ಬಿಡಿಸಿ",
+    disclaimer:"ವಾಕ್-ಭಾಷಾ ಚಿಕಿತ್ಸಕರ ಬಳಕೆಗಾಗಿ. ನಿಮ್ಮ ಮೌಲ್ಯಮಾಪನದ ಆಧಾರದಲ್ಲಿ ಗುರಿ ಆರಿಸಿ. ಪದಕೋಶಗಳು ಕರಡು; ಬಳಸುವ ಮೊದಲು ಉಪಭಾಷೆಗಾಗಿ ಪರಿಶೀಲಿಸಿ.",
+    reviewNote:"ಅನುವಾದಗಳು ಕರಡು ರೂಪದಲ್ಲಿವೆ; ಸ್ಥಳೀಯ ಭಾಷಿಕರು ಪರಿಶೀಲಿಸುತ್ತಿದ್ದಾರೆ.", builtBy:"ರಚನೆ" },
+  te:{ appName:"Word Set Maker", appSub:"ఉచ్చారణ చికిత్సకు కొత్త చిత్ర పదాలు", language:"భాష",
+    netOnline:"ఆన్‌లైన్", netOffline:"ఆఫ్‌లైన్ – పని కొనసాగుతోంది",
+    introTitle:"ప్రతి వారం కొత్త పదాల సెట్, పునరావృతం లేకుండా",
+    introText:"క్లయింట్ భాష, లక్ష్య ధ్వనులు, పదంలో స్థానం ఎంచుకోండి. యాప్ పరిచితమైన భారతీయ పదాలను ఎంచుకుంటుంది, ఇటీవల సాధన చేసినవి వదిలేస్తుంది, కార్డులు, ఇంటి సాధన పట్టిక ప్రింట్ చేస్తుంది.",
+    setupTitle:"సిద్ధం చేయండి", code:"క్లయింట్ కోడ్", codeHint:"పేరు కాదు, కోడ్ వాడండి. పదాల వంతు కోడ్ ప్రకారం నమోదవుతుంది.",
+    tlang:"చికిత్స భాష", targets:"లక్ష్య ధ్వనులు", positions:"పదంలో స్థానం", count:"పదాలు", weeks:"ఇటీవల వాడిన పదాలు వదలండి",
+    wk0:"వదలవద్దు", wk1:"గత వారం", wkN:"గత {n} వారాలు",
+    pI:"ఆది", pM:"మధ్య", pF:"అంత్య",
+    make:"సెట్ తయారు చేయండి", setTitle:"ఈ వారపు సెట్", saveSet:"ఈ వారపు సెట్‌గా సేవ్ చేయండి", printCards:"కార్డులు ప్రింట్", printChart:"ఇంటి పట్టిక ప్రింట్",
+    emptySet:"కనీసం ఒక లక్ష్య ధ్వని, ఒక స్థానం ఎంచుకుని \u201cసెట్ తయారు చేయండి\u201d నొక్కండి.",
+    errPick:"కనీసం ఒక లక్ష్య ధ్వని, ఒక స్థానం ఎంచుకోండి.",
+    short:"ఇటీవలివి వదిలాక {n} పదాలు మాత్రమే సరిపోతున్నాయి. మీ పదాలు చేర్చండి లేదా తక్కువ వారాలు వదలండి.",
+    none:"ఏ పదమూ సరిపోలేదు. వేరే స్థానం ఎంచుకోండి లేదా కింద మీ పదాలు చేర్చండి.",
+    swap:"మార్చు", swapLabel:"ఈ పదం మార్చు", saved:"{c} కోసం సేవ్ అయింది", needCode:"సేవ్ చేయడానికి క్లయింట్ కోడ్ నమోదు చేయండి.",
+    metaSet:"{n} పదాలు, {l}", histTitle:"సేవ్ చేసిన సెట్లు", exportCsv:"CSV డౌన్‌లోడ్", clearHist:"అన్ని సెట్లు తొలగించండి",
+    confirmClear:"ఈ పరికరం నుండి అన్ని సెట్లు తొలగించాలా? తిరిగి పొందలేరు.", cleared:"తొలగించబడ్డాయి",
+    histEmpty:"ఇంకా సేవ్ చేసిన సెట్లు లేవు. సేవ్ చేస్తే యాప్ పదాలను పునరావృతం చేయదు.",
+    colDate:"తేదీ", colCode:"క్లయింట్", colLang:"భాష", colWords:"పదాలు", del:"తొలగించు", deleted:"తొలగించబడింది",
+    customTitle:"మీ పదాలు చేర్చండి", customIntro:"మాండలికం, స్థానిక భాష లేదా క్లయింట్ ఆసక్తుల పదాలు చేర్చండి. అవి ఈ పరికరంలోని పదకోశంలో చేరుతాయి.",
+    cWord:"పదం", cPic:"చిత్రం (ఎమోజీ, ఐచ్ఛికం)", cGloss:"ఇంగ్లీష్ అర్థం (ఐచ్ఛికం)", cTarget:"లక్ష్య ధ్వని", cPos:"స్థానం", cAdd:"పదం చేర్చు",
+    cLangNote:"పదాలు {l} పదకోశంలో చేరుతాయి (పైన ఎంచుకున్న చికిత్స భాష).", cAdded:"పదం చేర్చబడింది", cNeed:"ముందు పదం రాయండి.",
+    customNone:"ఇంకా మీ పదాలు లేవు.",
+    chartTitle:"ఇంటి సాధన", chartTries:"ప్రతి పదాన్ని రోజుకు 10 సార్లు చెప్పండి. సాధన చేసిన ప్రతి రోజు టిక్ పెట్టండి.",
+    chartWord:"పదం", chartDays:["సోమ","మంగళ","బుధ","గురు","శుక్ర","శని","ఆది"], chartFoot:"పిల్లలు ప్రశాంతంగా, ఆసక్తిగా ఉన్నప్పుడు 5–10 నిమిషాలు సాధన చేయండి. సరైన ఉచ్చారణకే కాదు, ప్రయత్నానికీ మెచ్చుకోండి.",
+    noPic:"బొమ్మ గీయండి",
+    disclaimer:"స్పీచ్-లాంగ్వేజ్ పాథాలజిస్టుల ఉపయోగం కోసం. మీ అంచనా ఆధారంగా లక్ష్యాలు ఎంచుకోండి. పదకోశాలు చిత్తు ప్రతులు; వాడే ముందు మాండలికం కోసం సరిచూడండి.",
+    reviewNote:"అనువాదాలు చిత్తు ప్రతులు; స్థానిక భాషా నిపుణులు సమీక్షిస్తున్నారు.", builtBy:"రూపకల్పన" },
+  hi:{ appName:"Word Set Maker", appSub:"उच्चारण थेरेपी के लिए नए चित्र-शब्द", language:"भाषा",
+    netOnline:"ऑनलाइन", netOffline:"ऑफ़लाइन – काम जारी है",
+    introTitle:"हर हफ़्ते नया शब्द-सेट, बिना दोहराए",
+    introText:"क्लाइंट की भाषा, लक्ष्य ध्वनियाँ और शब्द में स्थान चुनें। ऐप जाने-पहचाने भारतीय शब्द चुनता है, हाल में अभ्यास किए शब्द छोड़ देता है, और कार्ड व घरेलू अभ्यास चार्ट प्रिंट करता है।",
+    setupTitle:"तैयारी", code:"क्लाइंट कोड", codeHint:"नाम नहीं, कोड लिखें। शब्दों की बारी कोड के हिसाब से दर्ज होती है।",
+    tlang:"थेरेपी की भाषा", targets:"लक्ष्य ध्वनियाँ", positions:"शब्द में स्थान", count:"शब्द", weeks:"हाल के शब्द छोड़ें",
+    wk0:"न छोड़ें", wk1:"पिछला हफ़्ता", wkN:"पिछले {n} हफ़्ते",
+    pI:"आरंभ", pM:"मध्य", pF:"अंत",
+    make:"सेट बनाएँ", setTitle:"इस हफ़्ते का सेट", saveSet:"इस हफ़्ते के सेट के रूप में सहेजें", printCards:"कार्ड प्रिंट करें", printChart:"घरेलू चार्ट प्रिंट करें",
+    emptySet:"कम से कम एक लक्ष्य ध्वनि और एक स्थान चुनें, फिर \u201cसेट बनाएँ\u201d दबाएँ।",
+    errPick:"कम से कम एक लक्ष्य ध्वनि और एक स्थान चुनें।",
+    short:"हाल के शब्द छोड़ने के बाद सिर्फ़ {n} शब्द मिले। अपने शब्द जोड़ें या कम हफ़्ते छोड़ें।",
+    none:"कोई शब्द नहीं मिला। दूसरा स्थान चुनें या नीचे अपने शब्द जोड़ें।",
+    swap:"बदलें", swapLabel:"यह शब्द बदलें", saved:"{c} के लिए सहेजा गया", needCode:"सहेजने के लिए क्लाइंट कोड लिखें।",
+    metaSet:"{n} शब्द, {l}", histTitle:"सहेजे गए सेट", exportCsv:"CSV डाउनलोड करें", clearHist:"सभी सेट हटाएँ",
+    confirmClear:"इस डिवाइस से सभी सेट हटाएँ? इसे वापस नहीं लाया जा सकता।", cleared:"हटाए गए",
+    histEmpty:"अभी कोई सहेजा सेट नहीं। सहेजने पर ऐप शब्द नहीं दोहराता।",
+    colDate:"तारीख़", colCode:"क्लाइंट", colLang:"भाषा", colWords:"शब्द", del:"हटाएँ", deleted:"हटाया गया",
+    customTitle:"अपने शब्द जोड़ें", customIntro:"बोली, स्थानीय भाषा या क्लाइंट की रुचि के शब्द जोड़ें। वे इस डिवाइस के शब्द-भंडार में जुड़ जाते हैं।",
+    cWord:"शब्द", cPic:"चित्र (इमोजी, वैकल्पिक)", cGloss:"अंग्रेज़ी अर्थ (वैकल्पिक)", cTarget:"लक्ष्य ध्वनि", cPos:"स्थान", cAdd:"शब्द जोड़ें",
+    cLangNote:"शब्द {l} शब्द-भंडार में जुड़ेंगे (ऊपर चुनी थेरेपी भाषा)।", cAdded:"शब्द जोड़ा गया", cNeed:"पहले शब्द लिखें।",
+    customNone:"अभी आपके कोई शब्द नहीं।",
+    chartTitle:"घरेलू अभ्यास", chartTries:"हर शब्द दिन में 10 बार बोलें। जिस दिन अभ्यास किया, उस दिन का खाना टिक करें।",
+    chartWord:"शब्द", chartDays:["सोम","मंगल","बुध","गुरु","शुक्र","शनि","रवि"], chartFoot:"जब बच्चा शांत और रुचि में हो, 5–10 मिनट अभ्यास करें। सिर्फ़ सही उच्चारण पर नहीं, कोशिश पर भी तारीफ़ करें।",
+    noPic:"चित्र बनाएँ",
+    disclaimer:"स्पीच-लैंग्वेज पैथोलॉजिस्ट के उपयोग के लिए। अपने मूल्यांकन के आधार पर लक्ष्य चुनें। शब्द-भंडार मसौदा हैं; उपयोग से पहले बोली के अनुसार जाँच लें।",
+    reviewNote:"अनुवाद मसौदा हैं; मूल भाषी इनकी समीक्षा कर रहे हैं।", builtBy:"निर्माता" }
+};
+
+/* ===== C. SHARED HELPERS (from ASLP App Kit) ===== */
+const $ = s => document.querySelector(s);
+const store = (() => { const mem = {}; let ok = true;
+  try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); } catch(e){ ok=false; }
+  return { ok,
+    get(k,d){ try{ const v = ok ? localStorage.getItem(k) : mem[k]; return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+    set(k,v){ const s = JSON.stringify(v); try{ ok ? localStorage.setItem(k,s) : (mem[k]=s); }catch(e){ mem[k]=s; } } };
+})();
+const nav2 = (navigator.language||"en").slice(0,2);
+let lang = store.get(APP.langKey, null) || (nav2 in I18N ? nav2 : "en");
+const t = (k, vars) => { let s = (I18N[lang] && I18N[lang][k]) ?? I18N.en[k] ?? k; if (vars && typeof s === "string") for (const v in vars) s = s.replace("{"+v+"}", vars[v]); return s; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){ const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2200); }
+function updateNet(){ const n=$("#net"), on=navigator.onLine; n.dataset.state=on?"online":"offline"; n.textContent=on?t("netOnline"):t("netOffline"); }
+function downloadCSV(rows, filename){
+  const csv = rows.map(r => r.map(v => `"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ===== D. WORD BANK — draft for clinical review =====
+   Each entry: "word:emoji:meaning". Positions: i = initial, m = medial, f = final.
+   Kannada and Telugu words mostly end in vowels, so they have no final-position lists. */
+const TARGETS = [
+  {id:"k", ipa:"/k/", glyph:{en:"k",kn:"ಕ",te:"క",hi:"क"}},
+  {id:"g", ipa:"/g/", glyph:{en:"g",kn:"ಗ",te:"గ",hi:"ग"}},
+  {id:"s", ipa:"/s/", glyph:{en:"s",kn:"ಸ",te:"స",hi:"स"}},
+  {id:"sh", ipa:"/ʃ/", glyph:{en:"sh",kn:"ಶ",te:"శ",hi:"श"}},
+  {id:"r", ipa:"/r/", glyph:{en:"r",kn:"ರ",te:"ర",hi:"र"}},
+  {id:"l", ipa:"/l/", glyph:{en:"l",kn:"ಲ",te:"ల",hi:"ल"}}
+];
+const LANG_NAME = {en:"English", kn:"ಕನ್ನಡ", te:"తెలుగు", hi:"हिन्दी"};
+const BANK = {
+  en:{
+    k:{i:"kite:🪁,cup:☕,car:🚗,coconut:🥥,key:🔑,cow:🐄", m:"chicken:🐔,rocket:🚀,monkey:🐒,bucket:🪣,cookie:🍪,jacket:🧥", f:"book:📖,duck:🦆,bike:🚲,cake:🎂,sock:🧦,milk:🥛"},
+    g:{i:"goat:🐐,girl:👧,gift:🎁,garden:🏡,guitar:🎸,gold:🥇", m:"tiger:🐅,finger:☝️,dragon:🐉,sugar:🍬,burger:🍔", f:"bag:👜,dog:🐕,egg:🥚,leg:🦵,flag:🚩,pig:🐖"},
+    s:{i:"sun:☀️,soap:🧼,sock:🧦,sari:🥻,samosa:,seven:7️⃣", m:"pencil:✏️,bicycle:🚲,dosa:,glasses:👓,ice cream:🍦,policeman:👮", f:"bus:🚌,house:🏠,rice:🍚,juice:🧃,horse:🐎,glass:🥛"},
+    sh:{i:"ship:🚢,shoe:👟,shirt:👕,sheep:🐑,shell:🐚,shop:🏪", f:"fish:🐟,dish:🍽️,brush:🪥,toothbrush:🪥"},
+    r:{i:"rice:🍚,rabbit:🐇,rose:🌹,rain:🌧️,ring:💍,road:🛣️", m:"parrot:🦜,carrot:🥕,zebra:🦓,umbrella:☂️,orange:🍊,cherry:🍒"},
+    l:{i:"lion:🦁,lemon:🍋,leaf:🍃,lorry:🚚,ladder:🪜,lamp:🪔", m:"balloon:🎈,yellow:🟡,elephant:🐘,umbrella:☂️,tulip:🌷,melon:🍈", f:"ball:⚽,bell:🔔,doll:🪆,apple:🍎,school:🏫,pencil:✏️"}
+  },
+  kn:{
+    k:{i:"ಕಾಲು:🦵:leg,ಕಣ್ಣು:👁️:eye,ಕೋತಿ:🐒:monkey,ಕಿವಿ:👂:ear,ಕುರಿ:🐑:sheep,ಕಪ್ಪೆ:🐸:frog,ಕಾರು:🚗:car", m:"ಬೆಕ್ಕು:🐈:cat,ಹಕ್ಕಿ:🐦:bird,ಚುಕ್ಕಿ:⭐:star,ಅಕ್ಕ:👧:elder sister,ಪುಸ್ತಕ:📖:book,ಸೈಕಲ್:🚲:cycle"},
+    g:{i:"ಗಡಿಯಾರ:⏰:clock,ಗಿಳಿ:🦜:parrot,ಗೊಂಬೆ:🪆:doll,ಗುಲಾಬಿ:🌹:rose,ಗೂಬೆ:🦉:owl,ಗಾಳಿಪಟ:🪁:kite", m:"ಮಗು:👶:baby,ಹಗ್ಗ:🪢:rope,ಬಾಗಿಲು:🚪:door,ನಗು:😄:smile,ಹುಡುಗ:👦:boy"},
+    s:{i:"ಸೇಬು:🍎:apple,ಸೂರ್ಯ:☀️:sun,ಸಾಬೂನು:🧼:soap,ಸಿಂಹ:🦁:lion,ಸೀರೆ:🥻:saree,ಸೊಳ್ಳೆ:🦟:mosquito", m:"ಹಸು:🐄:cow,ಮೊಸರು:🥣:curd,ಕಸ:🗑️:rubbish,ಬಸ್ಸು:🚌:bus,ಹೆಸರು:🏷️:name,ಪುಸ್ತಕ:📖:book"},
+    sh:{i:"ಶಾಲೆ:🏫:school,ಶಂಖ:🐚:conch,ಶರ್ಟ್:👕:shirt"},
+    r:{i:"ರೈಲು:🚆:train,ರೊಟ್ಟಿ:🫓:roti,ರಾಜ:👑:king,ರಸ್ತೆ:🛣️:road,ರಿಬ್ಬನ್:🎀:ribbon", m:"ಮರ:🌳:tree,ನೀರು:💧:water,ಕುರಿ:🐑:sheep,ಸೀರೆ:🥻:saree,ಕಾರು:🚗:car,ಗಡಿಯಾರ:⏰:clock"},
+    l:{i:"ಲಾರಿ:🚚:lorry,ಲೋಟ:🥛:tumbler,ಲಡ್ಡು::laddu,ಲಾಟೀನು:🏮:lantern", m:"ಹಾಲು:🥛:milk,ಕಾಲು:🦵:leg,ಎಲೆ:🍃:leaf,ಬಾಗಿಲು:🚪:door,ಗುಲಾಬಿ:🌹:rose,ರೈಲು:🚆:train"}
+  },
+  te:{
+    k:{i:"కాలు:🦵:leg,కన్ను:👁️:eye,కోతి:🐒:monkey,కుక్క:🐕:dog,కారు:🚗:car,కప్ప:🐸:frog", m:"కుక్క:🐕:dog,చుక్క:⭐:star,అక్క:👧:elder sister,మేక:🐐:goat,చిలుక:🦜:parrot,పుస్తకం:📖:book"},
+    g:{i:"గడియారం:⏰:clock,గుడ్డు:🥚:egg,గులాబి:🌹:rose,గుర్రం:🐎:horse,గంట:🔔:bell,గొడుగు:☂️:umbrella", m:"గొడుగు:☂️:umbrella,దగ్గు:😷:cough,మొగ్గ:🌷:bud,నగలు:💍:jewellery"},
+    s:{i:"సూర్యుడు:☀️:sun,సబ్బు:🧼:soap,సింహం:🦁:lion,సీసా:🍾:bottle,సైకిల్:🚲:cycle", m:"పుస్తకం:📖:book,పసుపు::turmeric,బస్సు:🚌:bus,మీసం:👨:moustache,దోస::dosa,పాయసం:🍮:payasam"},
+    sh:{i:"శంఖం:🐚:conch,షర్ట్:👕:shirt"},
+    r:{i:"రైలు:🚆:train,రొట్టె:🫓:roti,రాజు:👑:king,రంగు:🎨:colour", m:"చీర:🥻:saree,కారు:🚗:car,పూరీ:🫓:puri,గడియారం:⏰:clock,కూర:🍛:curry"},
+    l:{i:"లడ్డు::laddu,లారీ:🚚:lorry,లైటు:💡:light,లోటా:🥛:tumbler", m:"కాలు:🦵:leg,పాలు:🥛:milk,పిల్లి:🐈:cat,రైలు:🚆:train,ఉల్లిపాయ:🧅:onion,బెల్లం::jaggery"}
+  },
+  hi:{
+    k:{i:"कान:👂:ear,कुत्ता:🐕:dog,केला:🍌:banana,कप:☕:cup,किताब:📖:book,कमल:🪷:lotus", m:"मक्खी:🪰:fly,पकौड़ा::pakora,चाकू:🔪:knife,बकरी:🐐:goat,लकड़ी:🪵:wood,टोकरी:🧺:basket", f:"नाक:👃:nose,सड़क:🛣️:road,ट्रक:🚚:truck,बैंक:🏦:bank"},
+    g:{i:"गाय:🐄:cow,गेंद:⚽:ball,गाजर:🥕:carrot,गुब्बारा:🎈:balloon,गमला:🪴:flowerpot,गिलास:🥛:glass", m:"बगुला::heron,बैंगन:🍆:brinjal,जुगनू::firefly,अगरबत्ती::incense stick", f:"आग:🔥:fire,बाग:🏞️:garden,नाग:🐍:cobra,साग:🥬:greens"},
+    s:{i:"सेब:🍎:apple,साबुन:🧼:soap,सूरज:☀️:sun,साँप:🐍:snake,सीटी::whistle", m:"कुर्सी:🪑:chair,पैसा:💰:money,मौसी:👩:aunt,रस्सी:🪢:rope,बिस्कुट:🍪:biscuit", f:"बस:🚌:bus,घास:🌱:grass,अनानास:🍍:pineapple,रस:🧃:juice"},
+    sh:{i:"शेर:🐅:tiger,शहद:🍯:honey,शीशा:🪞:mirror,शंख:🐚:conch"},
+    r:{i:"रोटी:🫓:roti,रस्सी:🪢:rope,रेल:🚆:train,राजा:👑:king,रंग:🎨:colour", m:"बकरी:🐐:goat,कुर्सी:🪑:chair,टोकरी:🧺:basket,ज़ेबरा:🦓:zebra,परी:🧚:fairy", f:"मोर:🦚:peacock,गाजर:🥕:carrot,अनार::pomegranate,घर:🏠:house"},
+    l:{i:"लड्डू::laddu,लाल:🔴:red,लट्टू::spinning top,लौकी::bottle gourd,लड़का:👦:boy", m:"केला:🍌:banana,गुलाब:🌹:rose,बिल्ली:🐈:cat,तितली:🦋:butterfly,गोलगप्पा::golgappa", f:"बाल:💇:hair,फूल:🌸:flower,बादल:☁️:cloud,नल:🚰:tap"}
+  }
+};
+
+/* Parse bank into a flat list: {key, lang, word, pic, gloss, target, pos, custom} */
+function parseBank(){
+  const out = [];
+  for (const L in BANK) for (const tg in BANK[L]) for (const pos in BANK[L][tg])
+    BANK[L][tg][pos].split(",").forEach(item => { const [word, pic="", gloss=""] = item.split(":");
+      out.push({key:`${L}|${tg}|${pos}|${word}`, lang:L, word, pic, gloss: gloss || (L==="en" ? "" : ""), target:tg, pos, custom:false}); });
+  return out;
+}
+const BASE = parseBank();
+let custom = store.get(APP.customKey, []);
+let history = store.get(APP.histKey, []);
+let prefs = store.get(APP.prefsKey, {tlang:null, targets:["k"], positions:["i"], count:"8", weeks:"2"});
+let current = [];   // the set on screen
+const allWords = () => BASE.concat(custom);
+const POS = [{id:"i",k:"pI"},{id:"m",k:"pM"},{id:"f",k:"pF"}];
+
+/* ===== E. SET LOGIC ===== */
+const shuffle = a => { const b = a.slice(); for (let i = b.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [b[i],b[j]] = [b[j],b[i]]; } return b; };
+function recentWords(code, L, weeks){
+  if (!code || !weeks) return new Set();
+  const cutoff = Date.now() - weeks*7*864e5;
+  return new Set(history.filter(h => h.code === code && h.lang === L && new Date(h.date).getTime() >= cutoff).flatMap(h => h.words));
+}
+function pool(){
+  const L = $("#tlang").value, tg = checked("#targets"), ps = checked("#positions");
+  const recent = recentWords($("#code").value.trim(), L, Number($("#weeks").value));
+  const seen = new Set();
+  return allWords().filter(w => w.lang === L && tg.includes(w.target) && ps.includes(w.pos) && !recent.has(w.word))
+    .filter(w => { const k = w.word + "|" + w.target + "|" + w.pos; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+// Spread the set evenly across the chosen target+position combinations
+function makeSet(){
+  const n = Number($("#count").value), p = pool();
+  const groups = {}; p.forEach(w => (groups[w.target+w.pos] ||= []).push(w));
+  const queues = Object.values(groups).map(shuffle);
+  const out = [], used = new Set();
+  while (out.length < n && queues.some(q => q.length)){
+    for (const q of queues){ while (q.length && used.has(q[0].word)) q.shift(); if (q.length && out.length < n){ const w = q.shift(); out.push(w); used.add(w.word); } }
+  }
+  return {set: out, available: p.length};
+}
+function swapOne(i){
+  const inSet = new Set(current.map(w => w.word));
+  const opts = shuffle(pool().filter(w => !inSet.has(w.word)));
+  const same = opts.find(w => w.target === current[i].target && w.pos === current[i].pos) || opts[0];
+  if (same){ current[i] = same; renderSet(); }
+}
+
+/* Highlight the target sound in the word (approximate: first matching letter for the position) */
+function highlight(w){
+  const g = {en:{k:/(ck|k|c(?![eiy])|q)/i, g:/g(?![eiy])|g/i, s:/(s|c(?=[eiy]))/i, sh:/sh/i, r:/r/i, l:/l/i}}[w.lang];
+  const glyph = TARGETS.find(t => t.id === w.target).glyph[w.lang];
+  let re = g ? g[w.target] : new RegExp(glyph);
+  const word = w.word;
+  let idx = -1, len = 0;
+  if (w.pos === "f"){ // last match
+    const all = [...word.matchAll(new RegExp(re.source, "gi"))]; if (all.length){ const m = all[all.length-1]; idx = m.index; len = m[0].length; }
+  } else if (w.pos === "m"){
+    const all = [...word.matchAll(new RegExp(re.source, "gi"))].filter(m => m.index > 0); if (all.length){ idx = all[0].index; len = all[0][0].length; }
+  } else { const m = word.match(re); if (m && m.index === 0){ idx = 0; len = m[0].length; } }
+  if (idx < 0) return esc(word);
+  // extend over Indic combining marks (vowel signs, virama, nukta) so the syllable stays whole
+  let end = idx + len; while (end < word.length && /[\u0900-\u0903\u093A-\u094F\u0C80-\u0C83\u0CBC-\u0CD6\u0C00-\u0C04\u0C3C-\u0C56]/.test(word[end])) end++;
+  return esc(word.slice(0, idx)) + "<mark>" + esc(word.slice(idx, end)) + "</mark>" + esc(word.slice(end));
+}
+
+/* ===== F. RENDERING ===== */
+const checked = sel => [...document.querySelectorAll(sel + " input:checked")].map(i => i.value);
+function renderControls(){
+  const L = $("#tlang").value;
+  const have = tg => allWords().some(w => w.lang === L && w.target === tg);
+  $("#targets").innerHTML = TARGETS.map(tg => `<label class="chip"><input type="checkbox" value="${tg.id}" ${prefs.targets.includes(tg.id)?"checked":""} ${have(tg.id)?"":"disabled"}><span>${esc(tg.glyph[L])} <small>${esc(tg.ipa)}</small></span></label>`).join("");
+  const hasPos = p => allWords().some(w => w.lang === L && w.pos === p);
+  $("#positions").innerHTML = POS.map(p => `<label class="chip"><input type="checkbox" value="${p.id}" ${prefs.positions.includes(p.id)?"checked":""} ${hasPos(p.id)?"":"disabled"}><span>${esc(t(p.k))}</span></label>`).join("");
+  const wv = $("#weeks").value || prefs.weeks;
+  $("#weeks").innerHTML = [0,1,2,4].map(n => `<option value="${n}">${esc(n===0?t("wk0"):n===1?t("wk1"):t("wkN",{n}))}</option>`).join("");
+  $("#weeks").value = wv;
+  // custom word form
+  $("#cTarget").innerHTML = TARGETS.map(tg => `<option value="${tg.id}">${esc(tg.glyph[L])} ${esc(tg.ipa)}</option>`).join("");
+  $("#cPos").innerHTML = POS.map(p => `<option value="${p.id}">${esc(t(p.k))}</option>`).join("");
+  $("#cLangNote").textContent = t("cLangNote", {l: LANG_NAME[L]});
+}
+function renderSet(note){
+  const L = $("#tlang").value;
+  if (!current.length){
+    $("#cards").innerHTML = `<div class="empty-state" style="grid-column:1/-1">${esc(note || t("emptySet"))}</div>`;
+    $("#setMeta").textContent = ""; ["#saveSet","#printCards","#printChart"].forEach(b => $(b).disabled = true); return;
+  }
+  $("#setMeta").textContent = t("metaSet", {n: current.length, l: LANG_NAME[L]});
+  ["#saveSet","#printCards","#printChart"].forEach(b => $(b).disabled = false);
+  $("#cards").innerHTML = current.map((w,i) => { const tg = TARGETS.find(x => x.id === w.target);
+    return `<div class="card" lang="${w.lang}">
+      <span class="tag">${esc(tg.glyph[w.lang])}, ${esc(t(POS.find(p=>p.id===w.pos).k))}</span>
+      <button type="button" class="small swap" data-swap="${i}" aria-label="${esc(t("swapLabel"))}: ${esc(w.word)}">${esc(t("swap"))}</button>
+      <div class="pic ${w.pic?"":"none"}" aria-hidden="true">${w.pic ? esc(w.pic) : esc(t("noPic"))}</div>
+      <div class="word">${highlight(w)}</div>
+      ${w.gloss && w.lang !== "en" ? `<div class="gloss" lang="en">${esc(w.gloss)}</div>` : ""}
+    </div>`; }).join("");
+}
+function renderHistory(){
+  $("#csvBtn").disabled = !history.length; $("#clearHist").disabled = !history.length;
+  if (!history.length){ $("#hist").innerHTML = `<p class="muted" style="margin:0">${esc(t("histEmpty"))}</p>`; return; }
+  const loc = lang === "en" ? "en-IN" : lang + "-IN";
+  $("#hist").innerHTML = `<table class="rec"><thead><tr><th>${esc(t("colDate"))}</th><th>${esc(t("colCode"))}</th><th>${esc(t("colLang"))}</th><th>${esc(t("colWords"))}</th><th><span class="sr">${esc(t("del"))}</span></th></tr></thead><tbody>
+    ${history.slice().reverse().map(h => `<tr><td style="white-space:nowrap">${esc(new Date(h.date).toLocaleDateString(loc,{day:"numeric",month:"short"}))}</td><td>${esc(h.code)}</td><td>${esc(LANG_NAME[h.lang])}</td><td lang="${h.lang}">${esc(h.words.join(", "))}</td>
+    <td><button type="button" class="small danger" data-hdel="${esc(h.id)}">${esc(t("del"))}</button></td></tr>`).join("")}</tbody></table>`;
+}
+function renderCustom(){
+  if (!custom.length){ $("#customList").innerHTML = `<p class="muted" style="margin:0;font-size:.88rem">${esc(t("customNone"))}</p>`; return; }
+  $("#customList").innerHTML = `<table class="rec"><tbody>${custom.map(w => { const tg = TARGETS.find(x=>x.id===w.target);
+    return `<tr><td lang="${w.lang}">${esc(w.pic)} <b>${esc(w.word)}</b> ${w.gloss?`<span class="muted">(${esc(w.gloss)})</span>`:""}</td><td>${esc(LANG_NAME[w.lang])}</td><td>${esc(tg.glyph[w.lang])} ${esc(t(POS.find(p=>p.id===w.pos).k))}</td>
+    <td><button type="button" class="small danger" data-cdel="${esc(w.key)}">${esc(t("del"))}</button></td></tr>`; }).join("")}</tbody></table>`;
+}
+function buildPrint(kind){
+  const L = $("#tlang").value, code = $("#code").value.trim(), loc = L === "en" ? "en-IN" : L + "-IN";
+  const T = k => (I18N[L] && I18N[L][k]) ?? I18N.en[k];   // printouts go to families, so use the therapy language
+  const head = `<div class="p-head"><h2>${esc(kind === "chart" ? T("chartTitle") : T("setTitle"))}</h2>${esc(code)}${code?", ":""}${esc(LANG_NAME[L])}, ${esc(new Date().toLocaleDateString(loc,{day:"numeric",month:"short",year:"numeric"}))}</div>`;
+  if (kind === "cards"){
+    $("#printArea").innerHTML = head + `<div class="p-cards">${current.map(w => `<div class="p-card" lang="${w.lang}"><div class="pic">${esc(w.pic || "")}</div><div class="word">${highlight(w)}</div>${w.gloss && w.lang!=="en" ? `<div class="gloss">${esc(w.gloss)}</div>`:""}</div>`).join("")}</div>`;
+  } else {
+    const days = T("chartDays");
+    $("#printArea").innerHTML = head + `<p class="p-note">${esc(T("chartTries"))}</p>
+      <table class="chart"><thead><tr><th>${esc(T("chartWord"))}</th>${days.map(d=>`<th>${esc(d)}</th>`).join("")}</tr></thead>
+      <tbody>${current.map(w => `<tr><td class="w" lang="${w.lang}"><span>${esc(w.pic||"")}</span>${esc(w.word)}</td>${days.map(()=>"<td>☐</td>").join("")}</tr>`).join("")}</tbody></table>
+      <p class="p-note">${esc(T("chartFoot"))}</p>`;
+  }
+}
+function savePrefs(){
+  prefs = {tlang:$("#tlang").value, targets:checked("#targets"), positions:checked("#positions"), count:$("#count").value, weeks:$("#weeks").value};
+  store.set(APP.prefsKey, prefs);
+}
+function renderAll(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  $("#lang").value = lang;
+  $("#credit").textContent = `${t("builtBy")}: ${APP.author}, ${APP.affiliation}. v${APP.version}`;
+  updateNet(); renderControls(); renderSet(); renderHistory(); renderCustom();
+}
+
+/* ===== G. WIRING ===== */
+$("#tlang").value = prefs.tlang || lang;
+$("#count").value = prefs.count || "8";
+$("#lang").addEventListener("change", e => { lang = e.target.value; store.set(APP.langKey, lang); renderAll(); });
+$("#tlang").addEventListener("change", () => { current = []; savePrefs(); renderControls(); renderSet(); });
+["#targets","#positions"].forEach(s => $(s).addEventListener("change", savePrefs));
+["#count","#weeks"].forEach(s => $(s).addEventListener("change", savePrefs));
+$("#make").addEventListener("click", () => {
+  $("#err").textContent = ""; $("#notice").hidden = true;
+  if (!checked("#targets").length || !checked("#positions").length){ $("#err").textContent = t("errPick"); return; }
+  const r = makeSet(); current = r.set;
+  if (!current.length){ renderSet(t("none")); return; }
+  renderSet();
+  if (current.length < Number($("#count").value)){ $("#notice").textContent = t("short", {n: current.length}); $("#notice").hidden = false; }
+});
+$("#cards").addEventListener("click", e => { const b = e.target.closest("[data-swap]"); if (b) swapOne(Number(b.dataset.swap)); });
+$("#saveSet").addEventListener("click", () => {
+  const code = $("#code").value.trim();
+  if (!code){ $("#err").textContent = t("needCode"); $("#code").focus(); return; }
+  history.push({id: Date.now().toString(36), date: new Date().toISOString(), code, lang: $("#tlang").value, words: current.map(w => w.word), targets: [...new Set(current.map(w=>w.target+"-"+w.pos))]});
+  store.set(APP.histKey, history); renderHistory(); toast(t("saved", {c: code}));
+});
+$("#printCards").addEventListener("click", () => { buildPrint("cards"); window.print(); });
+$("#printChart").addEventListener("click", () => { buildPrint("chart"); window.print(); });
+$("#hist").addEventListener("click", e => { const id = e.target.dataset && e.target.dataset.hdel; if (!id) return; history = history.filter(h => h.id !== id); store.set(APP.histKey, history); renderHistory(); toast(t("deleted")); });
+$("#csvBtn").addEventListener("click", () => downloadCSV([["date","client_code","language","targets","words"], ...history.map(h => [h.date.slice(0,10), h.code, h.lang, (h.targets||[]).join(" "), h.words.join("; ")])], `word-sets-${new Date().toISOString().slice(0,10)}.csv`));
+$("#clearHist").addEventListener("click", () => { if (confirm(t("confirmClear"))){ history = []; store.set(APP.histKey, history); renderHistory(); toast(t("cleared")); } });
+$("#cAdd").addEventListener("click", () => {
+  const word = $("#cWord").value.trim();
+  if (!word){ $("#cErr").textContent = t("cNeed"); return; }
+  $("#cErr").textContent = "";
+  const L = $("#tlang").value, target = $("#cTarget").value, pos = $("#cPos").value;
+  custom.push({key:`c|${L}|${target}|${pos}|${word}|${Date.now()}`, lang:L, word, pic:$("#cPic").value.trim(), gloss:$("#cGloss").value.trim(), target, pos, custom:true});
+  store.set(APP.customKey, custom); ["#cWord","#cPic","#cGloss"].forEach(s => $(s).value = ""); renderControls(); renderCustom(); toast(t("cAdded"));
+});
+$("#customList").addEventListener("click", e => { const k = e.target.dataset && e.target.dataset.cdel; if (!k) return; custom = custom.filter(w => w.key !== k); store.set(APP.customKey, custom); renderControls(); renderCustom(); toast(t("deleted")); });
+window.addEventListener("online", updateNet); window.addEventListener("offline", updateNet);
+renderAll();
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
