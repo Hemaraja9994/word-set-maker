@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Design tokens shared by every ASLP app. Change colours here only. */
+@theme {
+  --color-paper: #F7F9FB;
+  --color-grid: #E3E9F0;
+  --color-surface: #FFFFFF;
+  --color-ink: #17212E;
+  --color-muted: #4F5D6E;
+  --color-line: #CBD5E1;
+  --color-track: #E3E9F0;
+  --color-accent: #1E5BB8;
+  --color-ok: #2E7D4F;
+  --color-mid: #8A5200;
+  --color-high: #B42318;
+  --color-right: #C62828;
+  --color-left: #1E5BB8;
+  --font-sans: "Atkinson Hyperlegible", "Noto Sans Kannada", "Noto Sans Telugu", "Noto Sans Devanagari", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #0E151E; --color-grid: #1B2633; --color-surface: #141E2A; --color-ink: #E6ECF3;
+    --color-muted: #A3B1C2; --color-line: #2B3A4B; --color-track: #22303F; --color-accent: #78AEFF;
+    --color-ok: #6FCF97; --color-mid: #F2B24C; --color-high: #FF8A80; --color-right: #FF7070; --color-left: #78AEFF;
+  }
+}
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    line-height: 1.55;
+    background-image: linear-gradient(var(--color-grid) 1px, transparent 1px), linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  :lang(kn) body, :lang(te) body, :lang(hi) body { line-height: 1.7; }
+  :focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; border-radius: 2px; }
+  a { color: var(--color-accent); }
+  input, select, textarea, button { font: inherit; color: inherit; }
+}
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .no-print { display: none !important; }
+  body.print-only-area > #root { display: none !important; }
+  #print-area { display: none; }
+  body.print-only-area #print-area { display: block !important; }
+  #print-area table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+  #print-area th, #print-area td { border: 1px solid #777; padding: 4pt 5pt; text-align: left; vertical-align: top; }
+  #print-area h2 { font-size: 16pt; margin: 0 0 4pt; } #print-area h3 { font-size: 12.5pt; margin: 10pt 0 3pt; }
+  #print-area .sig { margin-top: 22pt; display: flex; gap: 40pt; } #print-area .sig div { border-top: 1px solid #000; padding-top: 3pt; min-width: 180pt; font-size: 10pt; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
