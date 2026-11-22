@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "./app/theme.css";
 import { initI18n } from "./shell/i18n";
 import { initStorage } from "./shell/storage";
 import { strings } from "./app/strings";

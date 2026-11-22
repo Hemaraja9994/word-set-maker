@@ -1,0 +1,40 @@
+.theme-src{}
+/* ===== word-set-maker theme ===== */
+:root{
+  --color-paper: #FEFBF4;
+  --color-surface: #FFFFFF;
+  --color-ink: #22324A;
+  --color-muted: #52607A;
+  --color-line: #E6DECF;
+  --color-track: #F0E8D8;
+  --color-accent: #2563C9;
+  --color-grid: #F0E8D8;
+  --color-mid: #C2410C;
+  --color-high: #B42318;
+  --font-sans: "Nunito","Noto Sans Kannada","Noto Sans Telugu","Noto Sans Devanagari","Atkinson Hyperlegible",system-ui,sans-serif;
+  --font-display: "Fredoka","Noto Sans Kannada","Noto Sans Telugu","Noto Sans Devanagari","Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+  --color-paper: #0E1726;
+  --color-surface: #162236;
+  --color-ink: #E9EEF6;
+  --color-accent: #6AA3FF;
+  --color-grid: #1B2A40;
+  --color-muted: #A3B1C2;
+  --color-line: #2B3A4B;
+  --color-track: #22303F;
+  }
+}
+body{
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+h1,h2,h3,h4{ font-family: var(--font-display); }
+header.bg-ink{
+  background-image: radial-gradient(circle at 3px 3px, rgba(255,255,255,.08) 1.4px, transparent 0);
+  background-size: 22px 22px;
+}
+
